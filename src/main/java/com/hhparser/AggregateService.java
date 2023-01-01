@@ -35,37 +35,45 @@ public class AggregateService {
     }
 
     //TODO AOP benchmark
-    public Map<Stake, AggregatedResult> aggregate(List<String> hands) {
+    public List<AggregatedResult> aggregate(List<String> hands) {
         return this.process(hands.stream()
-                .map(parser::runSingleHand)
-                .toList());
+                        .map(parser::runSingleHand)
+                        .toList())
+                .stream()
+                .sorted(Comparator.comparing(AggregatedResult::getStake))
+                .toList();
     }
 
-    private Map<Stake, AggregatedResult> process(List<HandHistory> handHistory) {
+    private List<AggregatedResult> process(List<HandHistory> handHistory) {
         List<HandHistory> sortedByDate = handHistory.stream()
                 .filter(hand -> !hand.isBad())
                 .sorted(Comparator.comparing(HandHistory::getDate))
                 .toList();
+
         Map<Stake, AggregatedResult> collect = sortedByDate.stream()
                 .collect(groupingBy(AggregateService::checkStake, collectingAndThen(toList(), this::count)));
+
         if (collect.size() > 1) {
             AggregatedResult totalResults = getTotalResults(collect.values());
             totalResults.setHours(countHours(sortedByDate));
-            collect.put(Stake.TOTAL, totalResults);
+            collect.put(Stake.S_TOTAL, totalResults);
         }
-        collect.values().forEach(this::countAndSetProfitPerHour);
-        return collect;
+        for (Map.Entry<Stake, AggregatedResult> aggregatedResultEntry : collect.entrySet()) {
+            AggregatedResult aggregatedResult = aggregatedResultEntry.getValue();
+            aggregatedResult.setStake(aggregatedResultEntry.getKey());
+            aggregatedResult.setProfitPerHour(countProfitPerHour(aggregatedResult));
+        }
+        return collect.values().stream().toList();
     }
 
     private static Stake checkStake(HandHistory hh) {
         Stake stake = hh.getStake();
-        return stake == null ? Stake.UNK : stake;
+        return stake == null ? Stake.S_UNK : stake;
     }
 
-    private void countAndSetProfitPerHour(AggregatedResult result) {
-        result.setProfitPerHour(result.getProfit().divide(result.getHours(), 1, RoundingMode.HALF_EVEN));
+    private BigDecimal countProfitPerHour(AggregatedResult result) {
+        return result.getProfit().divide(result.getHours(), 1, RoundingMode.HALF_EVEN);
     }
-
 
     private AggregatedResult count(HandHistory hand) {
         Player hero = hand.getPlayers().get(HERO_NICKNAME);
@@ -81,8 +89,8 @@ public class AggregateService {
             profit = profit.add(playerCollected);
         }
         return AggregatedResult.builder()
-                .totalGGRake(ggRake)
-                .totalJPRake(jpRake)
+                .ggRake(ggRake)
+                .jpRake(jpRake)
                 .profit(profit)
                 .handsNumber(1)
                 .build();
@@ -96,8 +104,8 @@ public class AggregateService {
 
     private AggregatedResult count(List<HandHistory> handHistory) {
         AggregatedResult total = AggregatedResult.builder()
-                .totalGGRake(BigDecimal.ZERO)
-                .totalJPRake(BigDecimal.ZERO)
+                .ggRake(BigDecimal.ZERO)
+                .jpRake(BigDecimal.ZERO)
                 .profit(BigDecimal.ZERO)
                 .build();
         for (HandHistory hand : handHistory) {
@@ -116,8 +124,8 @@ public class AggregateService {
 
     private AggregatedResult sum(AggregatedResult result1, AggregatedResult result2) {
         return AggregatedResult.builder()
-                .totalGGRake(result1.getTotalGGRake().add(result2.getTotalGGRake()))
-                .totalJPRake(result1.getTotalJPRake().add(result2.getTotalJPRake()))
+                .ggRake(result1.getGgRake().add(result2.getGgRake()))
+                .jpRake(result1.getJpRake().add(result2.getJpRake()))
                 .profit(result1.getProfit().add(result2.getProfit()))
                 .handsNumber(result1.getHandsNumber() + result2.getHandsNumber())
                 .build();

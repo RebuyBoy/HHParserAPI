@@ -8,10 +8,11 @@ import java.math.BigDecimal;
 @Data
 @Builder
 public class AggregatedResult {
+    private Stake stake;
     private int handsNumber;
-    private BigDecimal totalGGRake;
-    private BigDecimal totalJPRake;
-    private BigDecimal profit;
     private BigDecimal hours;
+    private BigDecimal ggRake;
+    private BigDecimal jpRake;
+    private BigDecimal profit;
     private BigDecimal profitPerHour;
 }
