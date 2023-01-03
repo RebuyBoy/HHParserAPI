@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Builder
 public class AggregatedResult {
     private Stake stake;
-    private int handsNumber;
+    private int hands;
     private BigDecimal hours;
     private BigDecimal ggRake;
     private BigDecimal jpRake;

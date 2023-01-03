@@ -62,6 +62,11 @@ public class AggregateService {
             AggregatedResult aggregatedResult = aggregatedResultEntry.getValue();
             aggregatedResult.setStake(aggregatedResultEntry.getKey());
             aggregatedResult.setProfitPerHour(countProfitPerHour(aggregatedResult));
+            aggregatedResult.setProfit(aggregatedResult.getProfit().setScale(0, RoundingMode.HALF_DOWN));
+            aggregatedResult.setHours(aggregatedResult.getHours().setScale(1, RoundingMode.HALF_DOWN));
+            aggregatedResult.setProfit(aggregatedResult.getProfit().setScale(0, RoundingMode.HALF_DOWN));
+            aggregatedResult.setGgRake(aggregatedResult.getGgRake().setScale(0, RoundingMode.HALF_DOWN));
+            aggregatedResult.setJpRake(aggregatedResult.getJpRake().setScale(0, RoundingMode.HALF_DOWN));
         }
         return collect.values().stream().toList();
     }
@@ -92,7 +97,7 @@ public class AggregateService {
                 .ggRake(ggRake)
                 .jpRake(jpRake)
                 .profit(profit)
-                .handsNumber(1)
+                .hands(1)
                 .build();
     }
 
@@ -127,7 +132,7 @@ public class AggregateService {
                 .ggRake(result1.getGgRake().add(result2.getGgRake()))
                 .jpRake(result1.getJpRake().add(result2.getJpRake()))
                 .profit(result1.getProfit().add(result2.getProfit()))
-                .handsNumber(result1.getHandsNumber() + result2.getHandsNumber())
+                .hands(result1.getHands() + result2.getHands())
                 .build();
     }
 

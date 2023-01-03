@@ -2,6 +2,7 @@ package com.hhparser;
 
 import com.hhparser.models.AggregatedResult;
 import com.hhparser.util.FileReader;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
+@Slf4j
 public class ApplicationController {
     private final FileReader fileReader;
     private final AggregateService aggregateService;
@@ -24,6 +26,7 @@ public class ApplicationController {
     @CrossOrigin
     @PostMapping
     public List<AggregatedResult> getResults(@RequestParam("file") MultipartFile[] files) {
+        log.info("get request with files");
         List<String> strings = fileReader.readFiles(files);
         return aggregateService.aggregate(strings);
     }
