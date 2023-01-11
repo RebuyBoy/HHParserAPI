@@ -47,6 +47,7 @@ public class AggregateService {
     private List<AggregatedResult> process(List<HandHistory> handHistory) {
         List<HandHistory> sortedByDate = handHistory.stream()
                 .filter(hand -> !hand.isBad())
+                .distinct()
                 .sorted(Comparator.comparing(HandHistory::getDate))
                 .toList();
 

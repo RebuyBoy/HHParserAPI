@@ -4,7 +4,6 @@ import com.hhparser.models.AggregatedResult;
 import com.hhparser.util.FileReader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,14 +25,10 @@ public class ApplicationController {
     @CrossOrigin
     @PostMapping
     public List<AggregatedResult> getResults(@RequestParam("file") MultipartFile[] files) {
-        log.info("get request with files");
         List<String> strings = fileReader.readFiles(files);
-        return aggregateService.aggregate(strings);
-    }
-
-    @CrossOrigin
-    @GetMapping
-    public String getResults() {
-        return "test";
+        List<AggregatedResult> aggregate = aggregateService.aggregate(strings);
+        AggregatedResult total = aggregate.get(aggregate.size() - 1);
+        log.info("aggregate finished " + total.getHands() + " " + total.getProfit());
+        return aggregate;
     }
 }
